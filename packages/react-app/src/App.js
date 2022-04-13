@@ -26,13 +26,11 @@ function App() {
       </header>
       <main>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          {/* Replace with your content */}
           <Routes>
             <Route path="/" element={<Maze />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="*" element={<p>There's nothing here! Shoo Shoo</p>} />
           </Routes>
-          {/* /End replace */}
         </div>
       </main>
     </>
