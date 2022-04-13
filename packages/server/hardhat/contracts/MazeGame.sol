@@ -2,11 +2,12 @@
 pragma solidity ^0.8.0;
 
 contract MazeGame {
-  uint[2] public mapSize;
+  uint[2] public mapSize; // [r, c]
   byte32 public mapHash;
   uint public moveFee; // in wei
   mapping(address=>uint[2]) public playerPositions;
-  uint[2][] public map;
+  uint[][] public map; // revealed map coordinates
+  uint[][] public ObsMap; // revealed obs map
 
   constructor(string memory _map, uint _fee, uint[2] memory _size) {
     mapHash = keccak256(_map);
@@ -34,17 +35,25 @@ contract MazeGame {
   }
 
   function checkBlock(uint[2] memory _pos) private view returns (bool) {
-    for (uint i=0; i<map.length; i++) {
-      if (map[i][0] == _pos[i][0] && map[i][1] == _pos[i][1]) return true;
+    for (uint j=0; j<mapSize[0]; j++) {
+      for (uint i=0; i<mapSize[1]; i++) {
+        if (_pos[0] == j && _pos[1] == i && ObsMap[i][j] == 1) return true;
+      }
     }
+    return false;
+  }
+  /**
+  Given player's new position, update the Map
+  Let r = map[i][j]. If map is revealed, r = 0. Otherwise, r = 1
+  input: uint[2] _pos (player's new position)
+  output: uint[][] map (new map)
+   */
+
+  function updateMap(uint[2] memory _pos) public view returns (uint[][] memory) {
+    
   }
 
-  function updateMap(uint[2] memory _pos) private view returns (uint[2][] memory) {
-    uint[][] map = new uint[2][9];
-    // populate 3x3 map
-    for (uint i=0; i<9; i++) {
-       
-    }
-    // merge 3x3 map with the current map, return new map
+  function updateObsMap(uint[][] _map) {
+    ObsMap = _map;
   }
 }
