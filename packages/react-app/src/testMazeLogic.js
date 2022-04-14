@@ -139,17 +139,25 @@ function generateRevealed(mazeObj) {
   }
   // reveal start
   revealMaze[mazeObj.start[0]][mazeObj.start[1]] = Blocks.START;
-  let surroundingBlocks = getSurrondingBlocks(
-    mazeObj.start[0],
-    mazeObj.start[1],
-    mazeObj.rows,
-    mazeObj.cols
-  );
-  revealBlocks(surroundingBlocks, mazeObj.maze, revealMaze);
+  revealBlocks(mazeObj.start[0], mazeObj.start[1], mazeObj.maze, revealMaze);
   return revealMaze;
 }
 
-function revealBlocks(surroundingBlocks, maze, revealMaze) {
+export function revealBlocks(new_r, new_c, maze, revealMaze) {
+  if (
+    new_r < 0 ||
+    new_r > maze.length - 1 ||
+    new_c < 0 ||
+    new_c > maze[0].length - 1
+  ) {
+    return;
+  }
+  let surroundingBlocks = getSurrondingBlocks(
+    new_r,
+    new_c,
+    maze.length,
+    maze[0].length
+  );
   for (let i = 0; i < surroundingBlocks.length; i++) {
     let block = surroundingBlocks[i];
     let r = block[0];
