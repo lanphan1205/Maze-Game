@@ -5,74 +5,45 @@ contract MazeGame {
   address public owner;
   uint[2] public mapSize; // [r, c]
   bytes32 public mapHash;
-  uint public moveFee; // in wei
+  uint public moveFee = 0.001 * 10 ** 18; // in wei
   mapping(address=>uint[2]) public playerPositions; // x := pos[0], y := pos[1]
+  mapping(address=>uint) public playerAccounts;
   uint[][] public map; // revealed map coordinates. Non-revealed := 0, revealed > 0
-  uint[][] public ObsMap; // revealed obs map
 
   constructor(bytes32 _mapHash, uint _fee, uint[2] memory _size) {
     owner = msg.sender;
     mapHash = _mapHash;
     moveFee = _fee;
     mapSize = _size;
-    initMap();
-  }
-
-  /**
-  Initialize 3x3 square at the center
-   */
-  function initMap() private {
-
   }
 
   /**
   Anyone
-  Set player at the start position
   */
-
-  function start() public {
-
-  }
-  
-
-  function updatePlayerPosition(uint _dir) public payable {
-    require(msg.value == moveFee, "CHECK MOVE FEE AGAIN!");
-    require(_dir == 0 || _dir == 1 || _dir == 2 || _dir == 3, "DIRECTION IS INVALID!"); 
-   
+  function updatePlayerPosition(uint[2] memory _pos) public payable {
+    require(msg.value >= moveFee, "CHECK MOVE FEE AGAIN!");   
     uint[2] memory currPos = playerPositions[msg.sender];
-    // UP
-    if (_dir == 0) {
-      require(checkMove(currPos[0], currPos[1] - 1), "CANNOT MOVE UP!");
-      currPos[1] -= 1;
-    }
-    // RIGHT
-    else if (_dir == 1 && checkMove(currPos[0] + 1, currPos[1])) {
-      require(checkMove(currPos[0] + 1, currPos[1]), "CANNOT MOVE RIGHT!");
-      currPos[0] += 1;
-    }
-    // DOWN
-    else if (_dir == 2 && checkMove(currPos[0], currPos[1] + 1)) {
-      require(checkMove(currPos[0], currPos[1] + 1), "CANNOT MOVE DOWN!");
-      currPos[1] += 1;
-    }
-    // LEFT
-    else if (_dir == 2 && checkMove(currPos[0] - 1, currPos[1])) {
-      require(checkMove(currPos[0] - 1, currPos[1]), "CANNOT MOVE LEFT");
-      currPos[0] -= 1;
-    }
-    require(!payable(msg.sender).send(msg.value), "NOT ENOUGH FEE TO MAKE MOVE TXN!");
+    require((_pos[0] == currPos[0] && (_pos[1] == currPos[1] - 1 || _pos[1] == currPos[1] + 1)) // UP/DOWN
+    || (_pos[1] == currPos[1] && (_pos[0] == currPos[0] - 1 || _pos[0] == currPos[0] + 1)) // LEFT/RIGHT
+    && (checkMove(_pos[0], _pos[1])), // check block
+    "INVALID MOVE!");
   }
 
   function checkMove(uint x, uint y) private view returns (bool) {
-    return map[y][x] > 1; // ? := 0, WALL := 1, REWARD := 2, etc.
+    return map[y][x] == 1; // ? := 0, WALL := 1, REWARD := 2, etc.
   }
 
   /**
   Only owner 
    */
-  function updateMap(uint[][] memory _map) public  {
+  function updateMap(uint[][] memory _map) public {
     require(msg.sender == owner, "NOT OWNER!");
     map = _map;
+  }
+
+  function reward(address payable account) public {
+    require(msg.sender == owner, "NOT OWNER!");
+    payable(account).transfer(msg.value);
   }
 
 }
