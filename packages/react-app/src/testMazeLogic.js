@@ -20,11 +20,11 @@ export let RevealedMaze;
 
 /** Maze Object Constructor
  *
- * @param {int} rows
- * @param {int} cols
+ * @param {int} rows number of rows
+ * @param {int} cols number of cols
  * @param {Array<Array<int>>}} maze
- * @param {Array<int>} start
- * @param {int} exitsCount
+ * @param {Array<int>} start start position
+ * @param {int} exitsCount number of exits
  */
 function Maze(rows, cols, maze, start, exitsCount) {
   this.rows = rows;
@@ -141,8 +141,8 @@ function addStartAndExits(maze, exitCount) {
  * Used to initalise a new maze for a new round of the game.
  * Sets the global state FullMaze and RevealedMaze
  * @param {int} rows desired number of rows (recommend to use odd number)
- * @param {*} cols desired number of cols (recommend to use odd number)
- * @param {*} exitCount desired number of exits
+ * @param {int} cols desired number of cols (recommend to use odd number)
+ * @param {int} exitCount desired number of exits
  */
 export function generateFullMaze(rows, cols, exitCount) {
   let maze = new Array(rows);
@@ -205,7 +205,7 @@ function generateRevealed(mazeObj) {
  * @param {int} new_r new row position
  * @param {int} new_c new col position
  * @param {Array<Array<int>>} maze full maze
- * @param {*} revealMaze revealed maze
+ * @param {Array<Array<int>>} revealMaze revealed maze
  *
  */
 export function revealBlocks(new_r, new_c, maze, revealMaze) {
@@ -245,7 +245,7 @@ export function revealBlocks(new_r, new_c, maze, revealMaze) {
  * @param {int} r current row position
  * @param {int} c current col portiion
  * @param {int} rows total rows
- * @param {*} cols total cols
+ * @param {int} cols total cols
  * @returns {Array<Array<int>>} returns an array of positions which are also arrays (r,c)
  */
 function getSurrondingBlocks(r, c, rows, cols) {
