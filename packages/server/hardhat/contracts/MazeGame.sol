@@ -41,7 +41,7 @@ contract MazeGame {
     map = _map;
   }
 
-  function reward(address payable account) public {
+  function reward(address payable account) public payable {
     require(msg.sender == owner, "NOT OWNER!");
     payable(account).transfer(msg.value);
   }
