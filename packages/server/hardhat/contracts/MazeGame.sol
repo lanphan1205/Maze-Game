@@ -2,58 +2,77 @@
 pragma solidity ^0.8.0;
 
 contract MazeGame {
+  address public owner;
   uint[2] public mapSize; // [r, c]
-  byte32 public mapHash;
+  bytes32 public mapHash;
   uint public moveFee; // in wei
-  mapping(address=>uint[2]) public playerPositions;
-  uint[][] public map; // revealed map coordinates
+  mapping(address=>uint[2]) public playerPositions; // x := pos[0], y := pos[1]
+  uint[][] public map; // revealed map coordinates. Non-revealed := 0, revealed > 0
   uint[][] public ObsMap; // revealed obs map
 
-  constructor(string memory _map, uint _fee, uint[2] memory _size) {
-    mapHash = keccak256(_map);
+  constructor(bytes32 _mapHash, uint _fee, uint[2] memory _size) {
+    owner = msg.sender;
+    mapHash = _mapHash;
     moveFee = _fee;
     mapSize = _size;
+    initMap();
   }
 
-  function updatePlayerPosition(uint direction) public payable returns (uint[2] memory) {
-    require(msg.sender.value == moveFee, "CHECK MOVE FEE AGAIN!");
-    require(direction == 0 || direction == 1 || direction == 2 || direction == 3, "DIRECTION IS INVALID!"); 
-    uint[2] tempPos = playerPositions[msg.sender];
-    if (checkBlock(tempPos)) return temPos;
-    if (!msg.sender.transfer(msg.sender.value)) throw;
-    
-    // UP
-    if (direction == 0) playerPositions[msg.sender][1] += 1; 
-    // RIGHT
-    else if (direction == 1) playerPositions[msg.sender][0] += 1;
-    // DOWN
-    else if (direction == 2) playerPositions[msg.sender][1] -= 1;
-    // LEFT
-    else playerPositions[msg.sender][0] -= 1;
-
-    return playerPositions[msg.sender];
-  }
-
-  function checkBlock(uint[2] memory _pos) private view returns (bool) {
-    for (uint j=0; j<mapSize[0]; j++) {
-      for (uint i=0; i<mapSize[1]; i++) {
-        if (_pos[0] == j && _pos[1] == i && ObsMap[i][j] == 1) return true;
-      }
-    }
-    return false;
-  }
   /**
-  Given player's new position, update the Map
-  Let r = map[i][j]. If map is revealed, r = 0. Otherwise, r = 1
-  input: uint[2] _pos (player's new position)
-  output: uint[][] map (new map)
+  Initialize 3x3 square at the center
    */
+  function initMap() private {
 
-  function updateMap(uint[2] memory _pos) public view returns (uint[][] memory) {
-    
   }
 
-  function updateObsMap(uint[][] _map) {
-    ObsMap = _map;
+  /**
+  Anyone
+  Set player at the start position
+  */
+
+  function start() public {
+
   }
+  
+
+  function updatePlayerPosition(uint _dir) public payable {
+    require(msg.value == moveFee, "CHECK MOVE FEE AGAIN!");
+    require(_dir == 0 || _dir == 1 || _dir == 2 || _dir == 3, "DIRECTION IS INVALID!"); 
+   
+    uint[2] memory currPos = playerPositions[msg.sender];
+    // UP
+    if (_dir == 0) {
+      require(checkMove(currPos[0], currPos[1] - 1), "CANNOT MOVE UP!");
+      currPos[1] -= 1;
+    }
+    // RIGHT
+    else if (_dir == 1 && checkMove(currPos[0] + 1, currPos[1])) {
+      require(checkMove(currPos[0] + 1, currPos[1]), "CANNOT MOVE RIGHT!");
+      currPos[0] += 1;
+    }
+    // DOWN
+    else if (_dir == 2 && checkMove(currPos[0], currPos[1] + 1)) {
+      require(checkMove(currPos[0], currPos[1] + 1), "CANNOT MOVE DOWN!");
+      currPos[1] += 1;
+    }
+    // LEFT
+    else if (_dir == 2 && checkMove(currPos[0] - 1, currPos[1])) {
+      require(checkMove(currPos[0] - 1, currPos[1]), "CANNOT MOVE LEFT");
+      currPos[0] -= 1;
+    }
+    require(!payable(msg.sender).send(msg.value), "NOT ENOUGH FEE TO MAKE MOVE TXN!");
+  }
+
+  function checkMove(uint x, uint y) private view returns (bool) {
+    return map[y][x] > 1; // ? := 0, WALL := 1, REWARD := 2, etc.
+  }
+
+  /**
+  Only owner 
+   */
+  function updateMap(uint[][] memory _map) public  {
+    require(msg.sender == owner, "NOT OWNER!");
+    map = _map;
+  }
+
 }
