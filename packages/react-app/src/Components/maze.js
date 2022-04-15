@@ -22,7 +22,7 @@ const Direction = {
   RIGHT: 3,
 };
 // SET MAZE HERE
-generateFullMaze(10, 10, 3);
+generateFullMaze(11, 11, 3);
 
 function renderColour(param) {
   switch (param) {
@@ -45,13 +45,20 @@ export default function Maze() {
   const [revealedMaze, setRevealedMaze] = useState([[]]);
   const [fullMaze, setFullMaze] = useState([[]]);
   const [position, setPosition] = useState([]);
+  const [validMove, setValidMove] = useState({
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+  });
+
   useEffect(() => {
     setFullMaze(FullMaze.maze);
     setPosition(FullMaze.start);
-    console.log("Init call");
   }, []);
   useEffect(() => {
     setRevealedMaze(RevealedMaze);
+    checkValidMove();
   }, [position]);
 
   function move(dir) {
@@ -80,8 +87,43 @@ export default function Maze() {
     ) {
       return;
     }
+    if (
+      revealedMaze[newPosition[0]][newPosition[1]] === Display.WALL ||
+      revealedMaze[newPosition[0]][newPosition[1]] === Display.HIDDEN
+    ) {
+      console.log("BLOCKED");
+      return;
+    }
     revealBlocks(newPosition[0], newPosition[1], fullMaze, revealedMaze);
     setPosition(newPosition);
+  }
+
+  function checkValidMove() {
+    if (revealedMaze.length === 1) {
+      return;
+    }
+    let r = position[0];
+    let c = position[1];
+    let newValidMove = { up: true, down: true, left: true, right: true };
+    if (r === 0 || revealedMaze[r - 1][c] === Display.WALL) {
+      newValidMove.up = false;
+    }
+    if (
+      r === revealedMaze.length - 1 ||
+      revealedMaze[r + 1][c] === Display.WALL
+    ) {
+      newValidMove.down = false;
+    }
+    if (c === 0 || revealedMaze[r][c - 1] === Display.WALL) {
+      newValidMove.left = false;
+    }
+    if (
+      c === revealedMaze[0].length ||
+      revealedMaze[r][c + 1] === Display.WALL
+    ) {
+      newValidMove.right = false;
+    }
+    setValidMove(newValidMove);
   }
 
   function renderPosition(rid, cid) {
@@ -155,23 +197,39 @@ export default function Maze() {
       {/* Controls */}
       <div className="flex flex-col mx-24 my-auto">
         <button
-          className={styles.arrowUp}
+          className={
+            styles.arrowUp + " " + (validMove.up ? "" : styles.disableTop)
+          }
           onClick={() => move(Direction.UP)}
+          disabled={!validMove.up}
         ></button>
         <div className="flex">
           <button
-            className={styles.arrowLeft}
+            className={
+              styles.arrowLeft +
+              " " +
+              (validMove.left ? "" : styles.disableLeft)
+            }
             onClick={() => move(Direction.LEFT)}
+            disabled={!validMove.left}
           ></button>
-          <div className={styles.divider}></div>
+          <div className={styles.arrowDivider}></div>
           <button
-            className={styles.arrowRight}
+            className={
+              styles.arrowRight +
+              " " +
+              (validMove.right ? "" : styles.disableRight)
+            }
             onClick={() => move(Direction.RIGHT)}
+            disabled={!validMove.right}
           ></button>
         </div>
         <button
-          className={styles.arrowDown}
+          className={
+            styles.arrowDown + " " + (validMove.down ? "" : styles.disableDown)
+          }
           onClick={() => move(Direction.DOWN)}
+          disabled={!validMove.down}
         ></button>
       </div>
       <div>

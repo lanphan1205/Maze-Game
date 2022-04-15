@@ -1,3 +1,6 @@
+/**
+ * Possible block types that are relevant to the server
+ */
 const Blocks = {
   WALL: 0,
   PATH: 1,
@@ -6,9 +9,23 @@ const Blocks = {
   HIDDEN: 4,
 };
 
+/** GLOBAL: Full Maze with all details
+ * @type {{rows: int, cols: int, maze: Array<Array<int>>, start: Array<int>, exitCount: int}}
+ */
 export let FullMaze;
+/** GLOBAL: Partially Revealed maze
+ * @type {Array<Array<int>>}
+ */
 export let RevealedMaze;
 
+/** Maze Object Constructor
+ *
+ * @param {int} rows
+ * @param {int} cols
+ * @param {Array<Array<int>>}} maze
+ * @param {Array<int>} start
+ * @param {int} exitsCount
+ */
 function Maze(rows, cols, maze, start, exitsCount) {
   this.rows = rows;
   this.cols = cols;
@@ -17,13 +34,25 @@ function Maze(rows, cols, maze, start, exitsCount) {
   this.exitsCount = exitsCount;
 }
 
+/**
+ * Generate a random number from [0,num)
+ * @param {int} num
+ * @returns {int}
+ */
 function randInt(num) {
   return Math.floor(Math.random() * num);
 }
-
+/**
+ * Checks if selected exit is blocked
+ * @param {int} r current row position
+ * @param {int} c current col position
+ * @param {Array<Array<int>} maze fullMaze
+ * @returns {boolean}
+ */
 function isBlocked(r, c, maze) {
   let rows = maze.length;
   let cols = maze[0].length;
+  // Position is along the edge of the maze
   if (
     r === 0 &&
     (maze[r + 1][c] === Blocks.WALL || maze[r + 1][c] === Blocks.EXIT)
@@ -45,6 +74,7 @@ function isBlocked(r, c, maze) {
   ) {
     return true;
   } else if (
+    // edge case where exit is surrounded by walls
     r !== 0 &&
     r !== rows - 1 &&
     c !== 0 &&
@@ -59,11 +89,28 @@ function isBlocked(r, c, maze) {
   return false;
 }
 
+/**
+ * Checks if exit is too near to start based on maze size.
+ * Minimum distance is 1/8 of the total rows or cols
+ * @param {int} r current row position
+ * @param {int} c current col position
+ * @param {Array<int>} start starting coordinates (r,c)
+ * @param {int} rows total rows
+ * @param {int} cols total cols
+ * @returns {boolean}
+ */
 function isNearStart(r, c, start, rows, cols) {
   // console.log(Math.abs(start[0] - r), Math.abs(start[1] - c));
   return Math.abs(r - start[0]) < rows / 8 || Math.abs(c - start[1]) < cols / 8;
 }
 
+/**
+ * Modifies maze by adding start and exits. Only use for full maze.
+ * Uses isNearStart and isBlocked to make sure exits are valid before exiting
+ * @param {Array<Array<int>>} maze full maze
+ * @param {int} exitCount number of exits
+ * @returns {Array<int>} returns starting position (r,c)
+ */
 function addStartAndExits(maze, exitCount) {
   let start;
   let rows = maze.length;
@@ -88,10 +135,15 @@ function addStartAndExits(maze, exitCount) {
       exitCount -= 1;
     }
   }
-
   return start;
 }
-
+/**
+ * Used to initalise a new maze for a new round of the game.
+ * Sets the global state FullMaze and RevealedMaze
+ * @param {int} rows desired number of rows (recommend to use odd number)
+ * @param {*} cols desired number of cols (recommend to use odd number)
+ * @param {*} exitCount desired number of exits
+ */
 export function generateFullMaze(rows, cols, exitCount) {
   let maze = new Array(rows);
   for (let i = 0; i < rows; i++) {
@@ -131,7 +183,12 @@ export function generateFullMaze(rows, cols, exitCount) {
   FullMaze = new Maze(rows, cols, maze, start, exitCount);
   RevealedMaze = generateRevealed(FullMaze);
 }
-
+/**
+ * Initalise RevealedMaze after FullMaze has been fully created.
+ * Only blocks around start position is revealed
+ * @param {Maze} mazeObj full maze object with all the current state of the maze
+ * @returns {Array<Array<int>>} 2d array with only 3x3 blocks around start position revealed.
+ */
 function generateRevealed(mazeObj) {
   let revealMaze = new Array(mazeObj.rows);
   for (let i = 0; i < mazeObj.rows; i++) {
@@ -142,13 +199,28 @@ function generateRevealed(mazeObj) {
   revealBlocks(mazeObj.start[0], mazeObj.start[1], mazeObj.maze, revealMaze);
   return revealMaze;
 }
-
+/**
+ * Takes in a new position and reveals any new blocks on RevealedMaze (if any)
+ * Modifies the global state RevealedMaze
+ * @param {int} new_r new row position
+ * @param {int} new_c new col position
+ * @param {Array<Array<int>>} maze full maze
+ * @param {*} revealMaze revealed maze
+ *
+ */
 export function revealBlocks(new_r, new_c, maze, revealMaze) {
   if (
     new_r < 0 ||
     new_r > maze.length - 1 ||
     new_c < 0 ||
     new_c > maze[0].length - 1
+  ) {
+    return;
+  }
+
+  if (
+    maze[new_r][new_c] === Blocks.WALL ||
+    maze[new_r][new_c] === Blocks.HIDDEN
   ) {
     return;
   }
@@ -167,7 +239,15 @@ export function revealBlocks(new_r, new_c, maze, revealMaze) {
     }
   }
 }
-
+/**
+ * Find all valid surrounding blocks for a given position.
+ * Handles cases where position is at the corner/edges
+ * @param {int} r current row position
+ * @param {int} c current col portiion
+ * @param {int} rows total rows
+ * @param {*} cols total cols
+ * @returns {Array<Array<int>>} returns an array of positions which are also arrays (r,c)
+ */
 function getSurrondingBlocks(r, c, rows, cols) {
   let topRow = [
     [r - 1, c - 1],
@@ -203,14 +283,6 @@ function getSurrondingBlocks(r, c, rows, cols) {
     return topRow.concat(middleRow);
   }
   return topRow.concat(middleRow, bottomRow);
-}
-
-function printSurroundingBlocks(surroundingBlocks) {
-  let output = "";
-  surroundingBlocks.map((element) => {
-    return (output += "[" + element + "],");
-  });
-  console.log(output);
 }
 
 // SERVER SIDE LOGIC

@@ -4,7 +4,7 @@
   border-left: 40px solid transparent;
   border-right: 40px solid transparent;
   margin-left: 40px;
-  border-bottom: 40px solid black;
+  border-bottom: 40px solid;
 }
 
 .arrowDown {
@@ -13,7 +13,7 @@
   border-left: 40px solid transparent;
   border-right: 40px solid transparent;
   margin-left: 40px;
-  border-top: 40px solid black;
+  border-top: 40px solid;
 }
 
 .arrowRight {
@@ -22,7 +22,7 @@
   border-top: 40px solid transparent;
   border-bottom: 40px solid transparent;
 
-  border-left: 40px solid black;
+  border-left: 40px solid;
 }
 
 .arrowLeft {
@@ -31,10 +31,23 @@
   border-top: 40px solid transparent;
   border-bottom: 40px solid transparent;
 
-  border-right: 40px solid black;
+  border-right: 40px solid;
 }
 
-.divider {
+.arrowDivider {
   width: 80px;
   height: 80px;
+}
+
+.disableTop {
+  border-bottom-color: rgb(107 114 128);
+}
+.disableBottom {
+  border-top-color: rgb(107 114 128);
+}
+.disableRight {
+  border-left-color: rgb(107 114 128);
+}
+.disableLeft {
+  border-right-color: rgb(107 114 128);
 }
