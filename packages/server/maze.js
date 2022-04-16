@@ -201,13 +201,13 @@ function generateRevealed(mazeObj) {
  *
  */
 function revealBlocks(new_r, new_c, maze, revealMaze) {
-  console.log(maze);
   if (
     new_r < 0 ||
     new_r > maze.length - 1 ||
     new_c < 0 ||
     new_c > maze[0].length - 1
   ) {
+    console.log("BLOCKED");
     return;
   }
 
@@ -215,6 +215,7 @@ function revealBlocks(new_r, new_c, maze, revealMaze) {
     maze[new_r][new_c] === Blocks.WALL ||
     maze[new_r][new_c] === Blocks.HIDDEN
   ) {
+    console.log("INVALID MOVE");
     return;
   }
   let surroundingBlocks = getSurrondingBlocks(
