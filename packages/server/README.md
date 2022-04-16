@@ -13,7 +13,7 @@ $ npm run chain
 ```
 To deploy `MazeGame.sol` contract, specify `network_name` as the name of the blockchain network (localhost, kovan, rinkeby, mainnet, etc.):
 ```
-$ npm run deploy -- --tags wm --network <network_name>
+$ npm run deploy -- --tags mg --network <network_name>
 ```
 ### 2. Local Server
 
