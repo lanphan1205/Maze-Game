@@ -10,11 +10,18 @@ contract MazeGame {
   mapping(address=>uint) public playerAccounts;
   uint[][] public map; // revealed map coordinates. Non-revealed := 0, revealed > 0
 
-  constructor(bytes32 _mapHash, uint _fee, uint[2] memory _size) {
+  constructor(uint _fee, uint[2] memory _size) {
     owner = msg.sender;
-    mapHash = _mapHash;
     moveFee = _fee;
     mapSize = _size;
+  }
+
+  /**
+  Only owner 
+   */
+  function setMapHash(bytes32 _mapHash) public {
+    require(msg.sender == owner, "NOT OWNER!");
+    mapHash = _mapHash;
   }
 
   /**
