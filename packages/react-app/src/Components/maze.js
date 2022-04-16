@@ -159,7 +159,7 @@ export default function Maze() {
         )}
         <div
           className={`flex flex-col flex-nowrap align-middle ${
-            isLoading ? "opacity-90" : ""
+            isLoading ? "opacity-60" : ""
           }`}
         >
           {revealedMaze && position ? (
