@@ -6,6 +6,7 @@ import {
   FullMaze,
   RevealedMaze,
 } from "../testMazeLogic";
+import Spin from "./spin";
 const Display = {
   WALL: 0,
   PATH: 1,
@@ -42,9 +43,9 @@ function renderColour(param) {
 }
 
 export default function Maze() {
-  const [revealedMaze, setRevealedMaze] = useState([[]]);
-  const [fullMaze, setFullMaze] = useState([[]]);
-  const [position, setPosition] = useState([]);
+  const [revealedMaze, setRevealedMaze] = useState();
+  const [fullMaze, setFullMaze] = useState();
+  const [position, setPosition] = useState();
   const [validMove, setValidMove] = useState({
     up: false,
     down: false,
@@ -58,8 +59,42 @@ export default function Maze() {
   }, []);
   useEffect(() => {
     setRevealedMaze(RevealedMaze);
-    checkValidMove();
   }, [position]);
+
+  useEffect(() => {
+    const checkValidMove = () => {
+      if (revealedMaze === undefined) {
+        return;
+      }
+      let r = position[0];
+      let c = position[1];
+      let newValidMove = { up: true, down: true, left: true, right: true };
+      // check up
+      if (r === 0 || revealedMaze[r - 1][c] === Display.WALL) {
+        newValidMove.up = false;
+      }
+      // check down
+      if (
+        r === revealedMaze.length - 1 ||
+        revealedMaze[r + 1][c] === Display.WALL
+      ) {
+        newValidMove.down = false;
+      }
+      // check left
+      if (c === 0 || revealedMaze[r][c - 1] === Display.WALL) {
+        newValidMove.left = false;
+      }
+      // check right
+      if (
+        c === revealedMaze[0].length ||
+        revealedMaze[r][c + 1] === Display.WALL
+      ) {
+        newValidMove.right = false;
+      }
+      setValidMove(newValidMove);
+    };
+    checkValidMove();
+  }, [position, revealedMaze]);
 
   function move(dir) {
     let newPosition;
@@ -98,34 +133,6 @@ export default function Maze() {
     setPosition(newPosition);
   }
 
-  function checkValidMove() {
-    if (revealedMaze.length === 1) {
-      return;
-    }
-    let r = position[0];
-    let c = position[1];
-    let newValidMove = { up: true, down: true, left: true, right: true };
-    if (r === 0 || revealedMaze[r - 1][c] === Display.WALL) {
-      newValidMove.up = false;
-    }
-    if (
-      r === revealedMaze.length - 1 ||
-      revealedMaze[r + 1][c] === Display.WALL
-    ) {
-      newValidMove.down = false;
-    }
-    if (c === 0 || revealedMaze[r][c - 1] === Display.WALL) {
-      newValidMove.left = false;
-    }
-    if (
-      c === revealedMaze[0].length ||
-      revealedMaze[r][c + 1] === Display.WALL
-    ) {
-      newValidMove.right = false;
-    }
-    setValidMove(newValidMove);
-  }
-
   function renderPosition(rid, cid) {
     if (rid === position[0] && cid === position[1]) {
       return "border-2 border-yellow-500";
@@ -136,69 +143,100 @@ export default function Maze() {
     <div className="flex flex-auto gap-14 flex-wrap justify-center">
       {/* Revealed Maze */}
       <div className="flex flex-col flex-nowrap align-middle">
-        <div className="flex flex-nowrap justify-center h-4 xl:h-5">
-          {Array.from({ length: revealedMaze[0].length + 2 }, (v, index) => (
-            <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5" key={index}></div>
-          ))}
-        </div>
-        {revealedMaze.map((row, rid) => (
-          <div
-            className="flex flex-nowrap justify-center first:overflow-visible whitespace-nowrap h-4 xl:h-5"
-            key={String(rid)}
-          >
-            <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
-            {row.map((item, cid) => (
+        {revealedMaze ? (
+          <>
+            <div className="flex flex-nowrap justify-center h-4 xl:h-5">
+              {Array.from(
+                { length: revealedMaze[0].length + 2 },
+                (v, index) => (
+                  <div
+                    className=" bg-black h-4 w-4 xl:h-5 xl:w-5"
+                    key={index}
+                  ></div>
+                )
+              )}
+            </div>
+            {revealedMaze.map((row, rid) => (
               <div
-                className={` shrink-0 ${renderColour(
-                  item
-                )} h-4 w-4 xl:h-5 xl:w-5 ${renderPosition(rid, cid)}`}
-                key={String(rid) + String(cid)}
-              ></div>
+                className="flex flex-nowrap justify-center first:overflow-visible whitespace-nowrap h-4 xl:h-5"
+                key={String(rid)}
+              >
+                <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
+                {row.map((item, cid) => (
+                  <div
+                    className={` shrink-0 ${renderColour(
+                      item
+                    )} h-4 w-4 xl:h-5 xl:w-5 ${renderPosition(rid, cid)}`}
+                    key={String(rid) + String(cid)}
+                  ></div>
+                ))}
+                <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
+              </div>
             ))}
-            <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
-          </div>
-        ))}
-        <div className="flex flex-nowrap justify-center overflow-visible whitespace-nowrap h-4 xl:h-5">
-          {Array.from({ length: revealedMaze[0].length + 2 }, (v, index) => (
-            <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5" key={index}></div>
-          ))}
-        </div>
+            <div className="flex flex-nowrap justify-center overflow-visible whitespace-nowrap h-4 xl:h-5">
+              {Array.from(
+                { length: revealedMaze[0].length + 2 },
+                (v, index) => (
+                  <div
+                    className=" bg-black h-4 w-4 xl:h-5 xl:w-5"
+                    key={index}
+                  ></div>
+                )
+              )}
+            </div>
+          </>
+        ) : (
+          <Spin />
+        )}
       </div>
       {/* Full Maze */}
       <div className="flex flex-col flex-nowrap align-middle">
-        <div className="flex flex-nowrap justify-center h-4 xl:h-5">
-          {Array.from({ length: fullMaze[0].length + 2 }, (v, index) => (
-            <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5" key={index}></div>
-          ))}
-        </div>
-        {fullMaze.map((row, rid) => (
-          <div
-            className="flex flex-nowrap justify-center first:overflow-visible whitespace-nowrap h-4 xl:h-5"
-            key={rid}
-          >
-            <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
-            {row.map((item, cid) => (
+        {fullMaze ? (
+          <>
+            <div className="flex flex-nowrap justify-center h-4 xl:h-5">
+              {Array.from({ length: fullMaze[0].length + 2 }, (v, index) => (
+                <div
+                  className=" bg-black h-4 w-4 xl:h-5 xl:w-5"
+                  key={index}
+                ></div>
+              ))}
+            </div>
+            {fullMaze.map((row, rid) => (
               <div
-                className={` shrink-0 ${renderColour(
-                  item
-                )} h-4 w-4 xl:h-5 xl:w-5`}
-                key={String(rid) + String(cid)}
-              ></div>
+                className="flex flex-nowrap justify-center first:overflow-visible whitespace-nowrap h-4 xl:h-5"
+                key={rid}
+              >
+                <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
+                {row.map((item, cid) => (
+                  <div
+                    className={` shrink-0 ${renderColour(
+                      item
+                    )} h-4 w-4 xl:h-5 xl:w-5`}
+                    key={String(rid) + String(cid)}
+                  ></div>
+                ))}
+                <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
+              </div>
             ))}
-            <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
-          </div>
-        ))}
-        <div className="flex flex-nowrap justify-center overflow-visible whitespace-nowrap h-4 xl:h-5">
-          {Array.from({ length: fullMaze[0].length + 2 }, (v, index) => (
-            <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5" key={index}></div>
-          ))}
-        </div>
+            <div className="flex flex-nowrap justify-center overflow-visible whitespace-nowrap h-4 xl:h-5">
+              {Array.from({ length: fullMaze[0].length + 2 }, (v, index) => (
+                <div
+                  className=" bg-black h-4 w-4 xl:h-5 xl:w-5"
+                  key={index}
+                ></div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <Spin />
+        )}
       </div>
+
       {/* Controls */}
       <div className="flex flex-col mx-24 my-auto">
         <button
           className={
-            styles.arrowUp + " " + (validMove.up ? "" : styles.disableTop)
+            styles.arrowUp + " " + (validMove.up ? "" : styles.disableUp)
           }
           onClick={() => move(Direction.UP)}
           disabled={!validMove.up}
@@ -232,9 +270,9 @@ export default function Maze() {
           disabled={!validMove.down}
         ></button>
       </div>
-      <div>
+      {/* <div>
         Current Position: {position[0]},{position[1]}
-      </div>
+      </div> */}
     </div>
   );
 }

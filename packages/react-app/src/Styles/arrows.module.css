@@ -39,10 +39,10 @@
   height: 80px;
 }
 
-.disableTop {
+.disableUp {
   border-bottom-color: rgb(107 114 128);
 }
-.disableBottom {
+.disableDown {
   border-top-color: rgb(107 114 128);
 }
 .disableRight {

@@ -10,9 +10,7 @@ function App() {
   const [currPage, setCurrPage] = useState("");
   useEffect(() => {
     RouteIndex.map((route) => {
-      if (route.href == location.pathname) {
-        setCurrPage(route.name);
-      }
+      return route.href === location.pathname ? setCurrPage(route.name) : null;
     });
   }, [location]);
 
