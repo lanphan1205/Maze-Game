@@ -17,14 +17,14 @@ import {
   useGasPrice,
   useUserProviderAndSigner,
 } from "eth-hooks";
-import { useEventListener } from "eth-hooks/events/useEventListener"; 
+import { useEventListener } from "eth-hooks/events/useEventListener";
 
 import { useContractConfig } from "./hooks";
 import Portis from "@portis/web3";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
 
-const { ethers } = require("ethers");
+const { ethers, BigNumber } = require("ethers");
 
 const DEBUG = true;
 
@@ -34,9 +34,13 @@ const targetNetwork = NETWORKS.kovan; // <------- select your target frontend ne
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = targetNetwork.rpcUrl;
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
+const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER
+  ? process.env.REACT_APP_PROVIDER
+  : localProviderUrl;
 if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
+const localProvider = new ethers.providers.StaticJsonRpcProvider(
+  localProviderUrlFromEnv
+);
 
 // Coinbase walletLink init
 const walletLink = new WalletLink({
@@ -44,7 +48,10 @@ const walletLink = new WalletLink({
 });
 
 // WalletLink provider
-const walletLinkProvider = walletLink.makeWeb3Provider(`https://mainnet.infura.io/v3/${INFURA_ID}`, 1);
+const walletLinkProvider = walletLink.makeWeb3Provider(
+  `https://mainnet.infura.io/v3/${INFURA_ID}`,
+  1
+);
 
 // Portis ID: 6255fb2b-58c8-433b-a2c9-62098c05ddc9
 /*
@@ -66,7 +73,6 @@ const web3Modal = new Web3Modal({
           100: "https://dai.poa.network", // xDai
         },
       },
-
     },
     portis: {
       display: {
@@ -115,7 +121,6 @@ const web3Modal = new Web3Modal({
     },
   },
 });
-
 
 function App() {
   let location = useLocation();
@@ -305,6 +310,7 @@ function App() {
     readContracts,
     writeContracts,
     // balance,
+    yourLocalBalance,
     web3Modal,
     loadWeb3Modal,
     signMessage,
@@ -314,19 +320,39 @@ function App() {
     signed,
     setSigned,
   };
- 
   return (
     <>
       <Header web3Prop={web3Prop}></Header>
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold text-gray-900">{currPage}</h1>
+          {web3Prop.address ? (
+            <div className="flex flex-col pr-4">
+              <h1 className="text-sm font-bold text-gray-900">
+                Address:{" "}
+                {web3Prop.address.slice(0, 5) +
+                  "..." +
+                  web3Prop.address.slice(
+                    web3Prop.address.length - 5,
+                    web3Prop.address.length
+                  )}
+              </h1>
+              <h1 className="text-sm font-bold text-gray-900">
+                Balance:{" "}
+                {ethers.utils.formatEther(
+                  BigNumber.from(web3Prop.yourLocalBalance._hex)
+                )}
+              </h1>
+            </div>
+          ) : (
+            <></>
+          )}
         </div>
       </header>
       <main>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <Routes>
-            <Route path="/" element={<Maze web3Prop = {web3Prop}/>} />
+            <Route path="/" element={<Maze web3Prop={web3Prop} />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="*" element={<p>There's nothing here! Shoo Shoo</p>} />
           </Routes>

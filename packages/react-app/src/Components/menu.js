@@ -8,7 +8,7 @@ let activeClassName = "bg-gray-900 text-white " + baseNavClass;
 let inactiveClassName =
   "text-gray-300 hover:bg-gray-700 hover:text-white" + baseNavClass;
 
-export default function Header({web3Prop}) {
+export default function Header({ web3Prop }) {
   const {
     ethers,
     address,
@@ -33,10 +33,9 @@ export default function Header({web3Prop}) {
             Log out
           </button>
         );
-      }
-      else {
+      } else {
         return (
-          <button className={inactiveClassName} onClick={signMessage}>
+          <button className={activeClassName} onClick={signMessage}>
             Connect wallet
           </button>
         );

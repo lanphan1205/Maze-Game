@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styles from "../Styles/arrows.module.css";
-import { startMaze, updatePosition } from "../Helper/serverAPI";
+import { startMaze, updatePosition } from "../helpers/serverAPI";
 import Spin from "./spin";
 const Display = {
   WALL: 0,
@@ -35,7 +35,7 @@ function renderColour(param) {
   }
 }
 
-export default function Maze() {
+export default function Maze({ web3Prop }) {
   const [isLoading, setIsLoading] = useState(false);
   const [revealedMaze, setRevealedMaze] = useState();
   const [position, setPosition] = useState();
