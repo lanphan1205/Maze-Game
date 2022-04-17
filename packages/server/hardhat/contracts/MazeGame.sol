@@ -10,6 +10,7 @@ contract MazeGame {
   mapping(address=>uint) public playerAccounts;
   mapping(address=>uint) public isPlaying;
   uint[][] public map; // revealed map coordinates. Non-revealed := 0, revealed > 0
+  uint exit;
 
   constructor(uint _fee) {
     owner = msg.sender;
@@ -37,24 +38,30 @@ contract MazeGame {
   */
   function updatePlayerPosition(uint[2] memory _pos) public payable {
     require(msg.value >= moveFee, "INSUFFICIENT FEE!");   
+    require(isPlaying[msg.sender]==1, "PLAYER NOT PLAYING");
     uint[2] memory currPos = playerPositions[msg.sender];
     require((_pos[0] == currPos[0] && (_pos[1] == currPos[1] - 1 || _pos[1] == currPos[1] + 1)) // UP/DOWN
     || (_pos[1] == currPos[1] && (_pos[0] == currPos[0] - 1 || _pos[0] == currPos[0] + 1)) // LEFT/RIGHT
-    && (checkMove(_pos[0], _pos[1])), // check block
-    "INVALID MOVE!");
+    , "MOVE IS MORE THAN 1 SPACE"); 
+    require(checkMove(_pos[0], _pos[1]), // check block
+    "MOVE IS WALL OR HIDDEN");
+    playerAccounts[msg.sender] = msg.value;
     playerPositions[msg.sender] = _pos;
   }
 
   function checkMove(uint x, uint y) private view returns (bool) {
-    return map[y][x] == 1; // ? := 0, WALL := 1, REWARD := 2, etc.
+    return (map[x][y] == 1 || map[x][y] == 2 || map[x][y] == 3); // PATH, EXIT, START
   }
 
   /**
   Only owner 
    */
-  function updateMap(uint[][] memory _map) public {
+  function updateMap(uint[][] memory _map, uint _exitCount) public {
     require(msg.sender == owner, "NOT OWNER!");
     map = _map;
+    if (_exitCount != 0){
+      exit = _exitCount;
+    }
   }
 
    /**
@@ -62,8 +69,15 @@ contract MazeGame {
    */
   function reward(address payable account) public payable {
     require(msg.sender == owner, "NOT OWNER!");
-    payable(account).transfer(msg.value);
+    require(exit != 0, "NO MORE EXITS LEFT");
+    exit -=1;
+    if(exit > 1){
+      payable(account).transfer(address(this).balance/2);
+    }else if(exit == 0) {
+      payable(account).transfer(address(this).balance);
+    }
   }
+  
 
   /**
   Only owner 

@@ -194,7 +194,7 @@ function App() {
   const loadContracts = useContractLoader(
     userSigner,
     contractConfig,
-    localChainId
+    targetNetwork.chainId
   );
 
   const [signed, setSigned] = useState(web3Modal.cachedProvider);

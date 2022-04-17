@@ -8,18 +8,19 @@ const server = axios.create({
 async function startMaze(address) {
   try {
     let response = await server.post("/start", {
-      address: address
+      address: address,
     });
     // console.log(response);
     return { response };
   } catch (error) {
     return { error };
   }
-};
+}
 
-async function updatePosition(position) {
+async function updatePosition(address, position) {
   try {
     let response = await server.post("/move", {
+      address: address,
       position: position,
     });
     return { response };

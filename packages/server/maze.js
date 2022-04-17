@@ -7,6 +7,7 @@ const Blocks = {
   EXIT: 2,
   START: 3,
   HIDDEN: 4,
+  CLAIMED: 7,
 };
 
 /** Maze Object Constructor
@@ -282,4 +283,5 @@ function getSurrondingBlocks(r, c, rows, cols) {
 module.exports = {
   generateFullMaze,
   revealBlocks,
+  Blocks,
 };

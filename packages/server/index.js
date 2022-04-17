@@ -19,8 +19,8 @@ app.use((req, res, next) => {
 });
 
 // maze
-const { generateFullMaze, revealBlocks } = require("./maze");
-const { FullMaze, RevealedMaze } = generateFullMaze(21, 21, 3);
+const { generateFullMaze, revealBlocks, Blocks } = require("./maze");
+const { FullMaze, RevealedMaze } = generateFullMaze(5, 5, 3);
 console.log("--- Full Maze ---");
 console.log(FullMaze);
 console.log("--- Revealed Maze ---");
@@ -44,22 +44,23 @@ const signer = new ethers.providers.JsonRpcProvider(
 ).getSigner();
 const MG = new ethers.Contract(MGContract.address, MGContract.abi, signer);
 
-const initMap = async() => {
-  let tx_update_map = await MG.updateMap(RevealedMaze);
+const initMap = async (exitsCount) => {
+  let tx_update_map = await MG.updateMap(RevealedMaze, exitsCount);
   await tx_update_map.wait(1);
-}
+};
 
-initMap().then((err) => {if(!err) console.log("Map Init. ")})
+initMap(FullMaze.exitsCount).then(() => {
+  console.log("Map Init. ");
+});
 
 // express route
-// app.get("/contract-owner", (req, res) => {
-//   // res.send("Hello World!");
-//   // print contract owner
-//   const owner = async() => {
-//     return await MG.owner();
-//   }
-//   owner().then((owner) => res.send(owner));
-// });
+app.get("/contract-owner", (req, res) => {
+  // print contract owner
+  const owner = async () => {
+    return await MG.owner();
+  };
+  owner().then((owner) => res.send(owner));
+});
 
 app.post("/start", (req, res) => {
   if (req.body.address) {
@@ -75,10 +76,8 @@ app.post("/start", (req, res) => {
         start: FullMaze.start,
         exitsCount: FullMaze.exitsCount,
       });
-    })
-    
+    });
   }
-  
 });
 
 app.post("/move", (req, res) => {
@@ -91,26 +90,33 @@ app.post("/move", (req, res) => {
   // Only then do we send RevealedMaze to the client via res.send(RevealedMaze) so his frontend updates
   if (req.body.address && req.body.position) {
     const updateMap = async () => {
-      const x_pos = await MG.playerPosition(req.body.address, 0).toNumber();
-      const y_pos = await MG.playerPosition(req.body.address, 1).toNumber();
-      if (x_pos === req.body.position[0] && y_pos === req.body.position[1]) {
+      const r_pos = await MG.playerPositions(req.body.address, 0);
+      const c_pos = await MG.playerPositions(req.body.address, 1);
+      console.log(r_pos.toNumber());
+      console.log(c_pos.toNumber());
+      if (
+        r_pos.toNumber() === req.body.position[0] &&
+        c_pos.toNumber() === req.body.position[1]
+      ) {
         revealBlocks(
-          x_pos,
-          y_pos,
+          r_pos.toNumber(),
+          c_pos.toNumber(),
           FullMaze.maze,
           RevealedMaze
         );
-        await initMap();
+        if (RevealedMaze[r_pos.toNumber()][c_pos.toNumber()] == Blocks.EXIT) {
+          RevealedMaze[r_pos.toNumber()][c_pos.toNumber()] = Blocks.CLAIMED;
+          let rewardTx = await MG.reward(req.body.address);
+          await rewardTx.wait(1);
+        }
+        await initMap(0); // don't update exit count
         res.send(RevealedMaze);
       }
-    }
-    await updateMap();
-    
+    };
+    updateMap();
   }
 });
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
-
-

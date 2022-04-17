@@ -10,6 +10,7 @@ const Display = {
   HIDDEN: 4,
   BORDER: 5,
   CURRENT: 6,
+  CLAIMED: 7,
 };
 const Direction = {
   UP: 0,
@@ -30,6 +31,8 @@ function renderColour(param) {
       return "bg-blue-500";
     case Display.HIDDEN:
       return "bg-gray-200 border-r border-b border-gray-300";
+    case Display.CLAIMED:
+      return "bg-green-400";
     default:
       return "bg-white";
   }
@@ -70,24 +73,34 @@ export default function Maze({ web3Prop }) {
       let c = position[1];
       let newValidMove = { up: true, down: true, left: true, right: true };
       // check up
-      if (r === 0 || revealedMaze[r - 1][c] === Display.WALL) {
+      if (
+        r === 0 ||
+        revealedMaze[r - 1][c] === Display.WALL ||
+        revealedMaze[r - 1][c] === Display.CLAIMED
+      ) {
         newValidMove.up = false;
       }
       // check down
       if (
         r === revealedMaze.length - 1 ||
-        revealedMaze[r + 1][c] === Display.WALL
+        revealedMaze[r + 1][c] === Display.WALL ||
+        revealedMaze[r + 1][c] === Display.CLAIMED
       ) {
         newValidMove.down = false;
       }
       // check left
-      if (c === 0 || revealedMaze[r][c - 1] === Display.WALL) {
+      if (
+        c === 0 ||
+        revealedMaze[r][c - 1] === Display.WALL ||
+        revealedMaze[r][c - 1] === Display.CLAIMED
+      ) {
         newValidMove.left = false;
       }
       // check right
       if (
         c === revealedMaze[0].length ||
-        revealedMaze[r][c + 1] === Display.WALL
+        revealedMaze[r][c + 1] === Display.WALL ||
+        revealedMaze[r][c + 1] === Display.CLAIMED
       ) {
         newValidMove.right = false;
       }
@@ -125,42 +138,46 @@ export default function Maze({ web3Prop }) {
     }
     if (
       revealedMaze[newPosition[0]][newPosition[1]] === Display.WALL ||
-      revealedMaze[newPosition[0]][newPosition[1]] === Display.HIDDEN
+      revealedMaze[newPosition[0]][newPosition[1]] === Display.HIDDEN ||
+      revealedMaze[newPosition[0]][newPosition[1]] === Display.CLAIMED
     ) {
       console.log("BLOCKED");
       return;
     }
+    setIsError("");
     setIsLoading(true);
-
+    const callBack = async () => {
+      const r_pos = await loadContracts.MazeGame.playerPositions(address, 0);
+      const c_pos = await loadContracts.MazeGame.playerPositions(address, 1);
+      if (
+        !(
+          r_pos.toNumber() === newPosition[0] &&
+          c_pos.toNumber() === newPosition[1]
+        )
+      ) {
+        setIsError("Txn failed when trying to make a move");
+        setIsLoading(false);
+        return;
+      }
+      const { response, error } = await updatePosition(address, newPosition);
+      if (response.status === 200) {
+        setPosition(newPosition);
+        setRevealedMaze(response.data);
+        setIsLoading(false);
+      } else if (error) {
+        setIsError("Server issue when making a move");
+        setIsLoading(false);
+      }
+    };
     // blockchain
     // update player position
     tx(
       loadContracts.MazeGame.updatePlayerPosition(newPosition, {
         value: 0.001 * 10 ** 18,
-        gasLimit: 30000,
-      })
+        gasLimit: 300000,
+      }),
+      callBack
     );
-
-    // read position
-    const x_pos = await loadContracts.MazeGame.playerPositions(address, 0);
-    console.log("X", x_pos.toNumber());
-    const y_pos = await loadContracts.MazeGame.playerPositions(address, 1);
-    console.log("Y", y_pos.toNumber());
-    if (!(x_pos == newPosition[0] && y_pos == newPosition[1])) {
-      setIsLoading(false);
-      return;
-    }
-
-    const { response, error } = await updatePosition(newPosition);
-    if (response.status === 200) {
-      setPosition(newPosition);
-      // console.log(response.data);
-      setRevealedMaze(response.data);
-      setIsLoading(false);
-    } else if (error) {
-      setIsError("Something went wrong when trying to make a move");
-      setIsLoading(false);
-    }
   }
 
   async function getMaze() {
@@ -302,7 +319,9 @@ export default function Maze({ web3Prop }) {
             </>
           ) : (
             <button
-              className={`text-lg rounded-md my-28 px-5 py-6 font-medium ${isLoading ?"bg-indigo-200" :"bg-indigo-500"} text-white`}
+              className={`text-lg rounded-md my-28 px-5 py-6 font-medium ${
+                isLoading ? "bg-indigo-200" : "bg-indigo-500"
+              } text-white`}
               onClick={getMaze}
             >
               Click to Enter Maze
