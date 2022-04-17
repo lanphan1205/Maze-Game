@@ -36,6 +36,22 @@ function renderColour(param) {
 }
 
 export default function Maze({ web3Prop }) {
+  const {
+    ethers,
+    address,
+    readContracts,
+    writeContracts,
+    yourLocalBalance,
+    web3Modal,
+    loadWeb3Modal,
+    signMessage,
+    logoutOfWeb3Modal,
+    tx,
+    gasPrice,
+    signed,
+    setSigned,
+  } = web3Prop;
+  const [isError, setIsError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [revealedMaze, setRevealedMaze] = useState();
   const [position, setPosition] = useState();
@@ -46,18 +62,18 @@ export default function Maze({ web3Prop }) {
     right: false,
   });
 
-  useEffect(() => {
-    const getMaze = async () => {
-      const { response, error } = await startMaze();
-      if (response.status === 200) {
-        console.log(response.data.maze);
-        console.log(response.data.start);
-        setRevealedMaze(response.data.maze);
-        setPosition(response.data.start);
-      }
-    };
-    getMaze();
-  }, []);
+  // useEffect(() => {
+  //   const getMaze = async () => {
+  //     const { response, error } = await startMaze();
+  //     if (response.status === 200) {
+  //       console.log(response.data.maze);
+  //       console.log(response.data.start);
+  //       setRevealedMaze(response.data.maze);
+  //       setPosition(response.data.start);
+  //     }
+  //   };
+  //   getMaze();
+  // }, []);
 
   useEffect(() => {
     const checkValidMove = () => {
@@ -136,6 +152,21 @@ export default function Maze({ web3Prop }) {
       setRevealedMaze(response.data);
       setIsLoading(false);
     } else if (error) {
+      setIsError("Something went wrong when trying to make a move");
+      setIsLoading(false);
+    }
+  }
+
+  async function getMaze() {
+    setIsLoading(true);
+    const { response, error } = await startMaze();
+    if (response.status === 200) {
+      console.log(response.data.maze);
+      console.log(response.data.start);
+      setRevealedMaze(response.data.maze);
+      setPosition(response.data.start);
+    } else if (error) {
+      setIsError("Something went wrong when trying to get the maze");
       setIsLoading(false);
     }
   }
@@ -147,109 +178,142 @@ export default function Maze({ web3Prop }) {
   }
 
   return (
-    <div className="flex flex-auto gap-14 flex-wrap justify-center ">
-      {/* Revealed Maze */}
-      <div className="relative">
-        {isLoading ? (
-          <div className="absolute w-full h-full z-10 flex align-middle justify-center">
-            <Spin />
-          </div>
-        ) : (
-          <></>
-        )}
-        <div
-          className={`flex flex-col flex-nowrap align-middle ${
-            isLoading ? "opacity-60" : ""
-          }`}
-        >
-          {revealedMaze && position ? (
+    <>
+      {address ? (
+        <div className="flex flex-auto gap-14 flex-wrap justify-center ">
+          {position ? (
             <>
-              <div className="flex flex-nowrap justify-center h-4 xl:h-5">
-                {Array.from(
-                  { length: revealedMaze[0].length + 2 },
-                  (v, index) => (
-                    <div
-                      className=" bg-black h-4 w-4 xl:h-5 xl:w-5"
-                      key={index}
-                    ></div>
-                  )
+              {/* Revealed Maze */}
+              <div className="relative">
+                {isLoading ? (
+                  <div className="absolute w-full h-full z-10 flex align-middle justify-center">
+                    <Spin />
+                  </div>
+                ) : (
+                  <></>
                 )}
-              </div>
-              {revealedMaze.map((row, rid) => (
                 <div
-                  className="flex flex-nowrap justify-center first:overflow-visible whitespace-nowrap h-4 xl:h-5"
-                  key={String(rid)}
+                  className={`flex flex-col flex-nowrap align-middle ${
+                    isLoading ? "opacity-60" : ""
+                  }`}
                 >
-                  <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
-                  {row.map((item, cid) => (
-                    <div
-                      className={` shrink-0 ${renderColour(
-                        item
-                      )} h-4 w-4 xl:h-5 xl:w-5 ${renderPosition(rid, cid)}`}
-                      key={String(rid) + String(cid)}
-                    ></div>
-                  ))}
-                  <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
+                  {revealedMaze && position ? (
+                    <>
+                      <div className="flex flex-nowrap justify-center h-4 xl:h-5">
+                        {Array.from(
+                          { length: revealedMaze[0].length + 2 },
+                          (v, index) => (
+                            <div
+                              className=" bg-black h-4 w-4 xl:h-5 xl:w-5"
+                              key={index}
+                            ></div>
+                          )
+                        )}
+                      </div>
+                      {revealedMaze.map((row, rid) => (
+                        <div
+                          className="flex flex-nowrap justify-center first:overflow-visible whitespace-nowrap h-4 xl:h-5"
+                          key={String(rid)}
+                        >
+                          <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
+                          {row.map((item, cid) => (
+                            <div
+                              className={` shrink-0 ${renderColour(
+                                item
+                              )} h-4 w-4 xl:h-5 xl:w-5 ${renderPosition(
+                                rid,
+                                cid
+                              )}`}
+                              key={String(rid) + String(cid)}
+                            ></div>
+                          ))}
+                          <div className=" bg-black h-4 w-4 xl:h-5 xl:w-5"></div>
+                        </div>
+                      ))}
+                      <div className="flex flex-nowrap justify-center overflow-visible whitespace-nowrap h-4 xl:h-5">
+                        {Array.from(
+                          { length: revealedMaze[0].length + 2 },
+                          (v, index) => (
+                            <div
+                              className=" bg-black h-4 w-4 xl:h-5 xl:w-5"
+                              key={index}
+                            ></div>
+                          )
+                        )}
+                      </div>
+                      <div className="flex flex-nowrap overflow-visible whitespace-nowrap">
+                        Current Position: {position[0]},{position[1]}
+                      </div>
+                    </>
+                  ) : (
+                    <Spin />
+                  )}
                 </div>
-              ))}
-              <div className="flex flex-nowrap justify-center overflow-visible whitespace-nowrap h-4 xl:h-5">
-                {Array.from(
-                  { length: revealedMaze[0].length + 2 },
-                  (v, index) => (
-                    <div
-                      className=" bg-black h-4 w-4 xl:h-5 xl:w-5"
-                      key={index}
-                    ></div>
-                  )
-                )}
               </div>
-              <div className="flex flex-nowrap overflow-visible whitespace-nowrap">
-                Current Position: {position[0]},{position[1]}
+              {/* Controls */}
+              <div className="flex flex-col mx-24 my-auto">
+                <button
+                  className={
+                    styles.arrowUp +
+                    " " +
+                    (validMove.up ? "" : styles.disableUp)
+                  }
+                  onClick={() => move(Direction.UP)}
+                  disabled={!validMove.up || isLoading}
+                ></button>
+                <div className="flex">
+                  <button
+                    className={
+                      styles.arrowLeft +
+                      " " +
+                      (validMove.left ? "" : styles.disableLeft)
+                    }
+                    onClick={() => move(Direction.LEFT)}
+                    disabled={!validMove.left || isLoading}
+                  ></button>
+                  <div className={styles.arrowDivider}></div>
+                  <button
+                    className={
+                      styles.arrowRight +
+                      " " +
+                      (validMove.right ? "" : styles.disableRight)
+                    }
+                    onClick={() => move(Direction.RIGHT)}
+                    disabled={!validMove.right || isLoading}
+                  ></button>
+                </div>
+                <button
+                  className={
+                    styles.arrowDown +
+                    " " +
+                    (validMove.down ? "" : styles.disableDown)
+                  }
+                  onClick={() => move(Direction.DOWN)}
+                  disabled={!validMove.down || isLoading}
+                ></button>
               </div>
             </>
           ) : (
-            <Spin />
+            <button
+              className=" text-lg rounded-md my-28 px-5 py-6 font-medium bg-indigo-500 text-white"
+              onClick={getMaze}
+            >
+              Click to Enter Maze
+            </button>
           )}
         </div>
-      </div>
-      {/* Controls */}
-      <div className="flex flex-col mx-24 my-auto">
-        <button
-          className={
-            styles.arrowUp + " " + (validMove.up ? "" : styles.disableUp)
-          }
-          onClick={() => move(Direction.UP)}
-          disabled={!validMove.up || isLoading}
-        ></button>
-        <div className="flex">
-          <button
-            className={
-              styles.arrowLeft +
-              " " +
-              (validMove.left ? "" : styles.disableLeft)
-            }
-            onClick={() => move(Direction.LEFT)}
-            disabled={!validMove.left || isLoading}
-          ></button>
-          <div className={styles.arrowDivider}></div>
-          <button
-            className={
-              styles.arrowRight +
-              " " +
-              (validMove.right ? "" : styles.disableRight)
-            }
-            onClick={() => move(Direction.RIGHT)}
-            disabled={!validMove.right || isLoading}
-          ></button>
+      ) : (
+        <div className="flex justify-center align-middle">
+          <div className=" text-3xl my-20 font-medium text-indigo-500">
+            Please connect your wallet to start {"🕹️"}
+          </div>
         </div>
-        <button
-          className={
-            styles.arrowDown + " " + (validMove.down ? "" : styles.disableDown)
-          }
-          onClick={() => move(Direction.DOWN)}
-          disabled={!validMove.down || isLoading}
-        ></button>
-      </div>
-    </div>
+      )}
+      {isError ? (
+        <div className="text-base my-0 mx-auto text-red-500">
+          Error: {isError}
+        </div>
+      ) : null}
+    </>
   );
 }

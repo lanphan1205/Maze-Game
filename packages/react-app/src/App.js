@@ -328,20 +328,25 @@ function App() {
           <h1 className="text-3xl font-bold text-gray-900">{currPage}</h1>
           {web3Prop.address ? (
             <div className="flex flex-col pr-4">
-              <h1 className="text-sm font-bold text-gray-900">
-                Address:{" "}
-                {web3Prop.address.slice(0, 5) +
-                  "..." +
-                  web3Prop.address.slice(
-                    web3Prop.address.length - 5,
-                    web3Prop.address.length
-                  )}
+              <h1 className="text-sm font-medium text-gray-900">
+                <span className="font-bold pr-1">Address:</span>
+
+                <span className="ml-1">
+                  {web3Prop.address.slice(0, 5) +
+                    "..." +
+                    web3Prop.address.slice(
+                      web3Prop.address.length - 5,
+                      web3Prop.address.length
+                    )}
+                </span>
               </h1>
-              <h1 className="text-sm font-bold text-gray-900">
-                Balance:{" "}
-                {ethers.utils.formatEther(
-                  BigNumber.from(web3Prop.yourLocalBalance._hex)
-                )}
+              <h1 className="text-sm font-medium text-gray-900">
+                <span className="font-bold pr-1">Balance: </span>
+                <span className="ml-1">
+                  {ethers.utils.formatEther(
+                    BigNumber.from(web3Prop.yourLocalBalance._hex)
+                  )}
+                </span>
               </h1>
             </div>
           ) : (
