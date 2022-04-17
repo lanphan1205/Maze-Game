@@ -35,7 +35,9 @@ function renderColour(param) {
   }
 }
 
-export default function Maze() {
+export default function Maze({web3Prop}) {
+  // Deconstruct
+  readContracts.MazeGame.
   const [isLoading, setIsLoading] = useState(false);
   const [revealedMaze, setRevealedMaze] = useState();
   const [position, setPosition] = useState();

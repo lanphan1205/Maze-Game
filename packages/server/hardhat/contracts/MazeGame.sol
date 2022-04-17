@@ -18,7 +18,8 @@ contract MazeGame {
  /**
   Only owner 
    */
-  function setMapSize(uint[2] memory _size) {
+  function setMapSize(uint[2] memory _size) public {
+    require(msg.sender == owner, "NOT OWNER!");
     mapSize = _size;
   }
 
