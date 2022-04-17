@@ -89,15 +89,23 @@ app.post("/move", (req, res) => {
   // Send this RevealedMaze to the smart contract.
   // When the smart contract responds(I hope it does),
   // Only then do we send RevealedMaze to the client via res.send(RevealedMaze) so his frontend updates
-
-  if (req.body.position) {
-    revealBlocks(
-      req.body.position[0],
-      req.body.position[1],
-      FullMaze.maze,
-      RevealedMaze
-    );
-    res.send(RevealedMaze);
+  if (req.body.address && req.body.position) {
+    const updateMap = async () => {
+      const x_pos = await MG.playerPosition(req.body.address, 0).toNumber();
+      const y_pos = await MG.playerPosition(req.body.address, 1).toNumber();
+      if (x_pos === req.body.position[0] && y_pos === req.body.position[1]) {
+        revealBlocks(
+          x_pos,
+          y_pos,
+          FullMaze.maze,
+          RevealedMaze
+        );
+        await initMap();
+        res.send(RevealedMaze);
+      }
+    }
+    await updateMap();
+    
   }
 });
 
