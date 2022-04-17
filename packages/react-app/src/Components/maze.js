@@ -165,7 +165,7 @@ export default function Maze({ web3Prop }) {
 
   async function getMaze() {
     setIsLoading(true);
-    const { response, error } = await startMaze();
+    const { response, error } = await startMaze(address);
     if (response.status === 200) {
       console.log(response.data.maze);
       console.log(response.data.start);
@@ -302,7 +302,7 @@ export default function Maze({ web3Prop }) {
             </>
           ) : (
             <button
-              className=" text-lg rounded-md my-28 px-5 py-6 font-medium bg-indigo-500 text-white"
+              className={`text-lg rounded-md my-28 px-5 py-6 font-medium ${isLoading ?"bg-indigo-200" :"bg-indigo-500"} text-white`}
               onClick={getMaze}
             >
               Click to Enter Maze

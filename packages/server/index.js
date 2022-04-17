@@ -44,16 +44,12 @@ const signer = new ethers.providers.JsonRpcProvider(
 ).getSigner();
 const MG = new ethers.Contract(MGContract.address, MGContract.abi, signer);
 
+const initMap = async() => {
+  let tx_update_map = await MG.updateMap(RevealedMaze);
+  await tx_update_map.wait(1);
+}
 
-// const GreeterContractFile = fs.readFileSync(
-//   `./hardhat/deployments/${network}/Greeter.json`
-// );
-// const GreeterContract = JSON.parse(GreeterContractFile.toString());
-
-// const signer = new ethers.providers.JsonRpcProvider(
-//   getRpcUrlFromName[network]
-// ).getSigner();
-// const Greeter = new ethers.Contract(GreeterContract.address, GreeterContract.abi, signer);
+initMap().then((err) => {if(!err) console.log("Map Init. ")})
 
 // express route
 // app.get("/contract-owner", (req, res) => {
@@ -65,20 +61,22 @@ const MG = new ethers.Contract(MGContract.address, MGContract.abi, signer);
 //   owner().then((owner) => res.send(owner));
 // });
 
-app.get("/start", (req, res) => {
+app.post("/start", (req, res) => {
   if (req.body.address) {
     const register = async (address) => {
       let tx_reg = await MG.register(address, FullMaze.start);
       await tx_reg.wait(1);
-      
     };
-    res.send({
-      rows: FullMaze.rows,
-      cols: FullMaze.cols,
-      maze: RevealedMaze,
-      start: FullMaze.start,
-      exitsCount: FullMaze.exitsCount,
-    });
+    register(req.body.address).then(() => {
+      res.send({
+        rows: FullMaze.rows,
+        cols: FullMaze.cols,
+        maze: RevealedMaze,
+        start: FullMaze.start,
+        exitsCount: FullMaze.exitsCount,
+      });
+    })
+    
   }
   
 });
