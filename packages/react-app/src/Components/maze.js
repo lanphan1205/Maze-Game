@@ -35,7 +35,22 @@ function renderColour(param) {
   }
 }
 
-export default function Maze() {
+export default function Maze({web3Prop}) {
+  const {
+    ethers,
+    address,
+    loadContracts,
+    // balance,
+    web3Modal,
+    loadWeb3Modal,
+    signMessage,
+    logoutOfWeb3Modal,
+    tx,
+    gasPrice,
+    signed,
+    setSigned,
+  } = web3Prop;
+
   const [isLoading, setIsLoading] = useState(false);
   const [revealedMaze, setRevealedMaze] = useState();
   const [position, setPosition] = useState();
@@ -129,6 +144,21 @@ export default function Maze() {
       return;
     }
     setIsLoading(true);
+
+    // blockchain
+    // update player position
+    tx(loadContracts.MazeGame.updatePlayerPosition(newPosition, {value: 0.001 * 10 ** 18, gasLimit: 30000}));
+
+    // read position
+    const x_pos = await loadContracts.MazeGame.playerPositions(address, 0);
+    console.log("X", x_pos.toNumber());
+    const y_pos = await loadContracts.MazeGame.playerPositions(address, 1);
+    console.log("Y", y_pos.toNumber());
+    if (!(x_pos == newPosition[0] && y_pos == newPosition[1])) {
+      setIsLoading(false);
+      return;
+    }
+
     const { response, error } = await updatePosition(newPosition);
     if (response.status === 200) {
       setPosition(newPosition);

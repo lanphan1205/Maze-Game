@@ -20,6 +20,7 @@ export default function Header({web3Prop}) {
     signMessage,
     logoutOfWeb3Modal,
     tx,
+    faucetTx,
     gasPrice,
     signed,
     setSigned,
@@ -42,6 +43,22 @@ export default function Header({web3Prop}) {
         );
       }
     }
+  }
+
+  function Faucet() {
+    return (
+      <button
+        className={activeClassName}
+        onClick={() => {
+          faucetTx({
+            to: address,
+            value: ethers.utils.parseEther("0.01"),
+          });
+        }}
+      >
+        💰 Grab funds from the faucet ⛽️
+      </button>
+    );
   }
   return (
     <>
@@ -79,6 +96,7 @@ export default function Header({web3Prop}) {
                     <div className="ml-4 flex items-center md:ml-6">
                       {/* Con add stuff here for things on the right like wallet connection*/}
                       <ConnectButton />
+                      <Faucet />
                     </div>
                   </div>
                   <div className="-mr-2 flex md:hidden">
