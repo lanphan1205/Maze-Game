@@ -62,19 +62,6 @@ export default function Maze({ web3Prop }) {
     right: false,
   });
 
-  // useEffect(() => {
-  //   const getMaze = async () => {
-  //     const { response, error } = await startMaze();
-  //     if (response.status === 200) {
-  //       console.log(response.data.maze);
-  //       console.log(response.data.start);
-  //       setRevealedMaze(response.data.maze);
-  //       setPosition(response.data.start);
-  //     }
-  //   };
-  //   getMaze();
-  // }, []);
-
   useEffect(() => {
     const checkValidMove = () => {
       if (!revealedMaze || !position) {
