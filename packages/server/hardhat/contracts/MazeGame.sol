@@ -10,9 +10,15 @@ contract MazeGame {
   mapping(address=>uint) public playerAccounts;
   uint[][] public map; // revealed map coordinates. Non-revealed := 0, revealed > 0
 
-  constructor(uint _fee, uint[2] memory _size) {
+  constructor(uint _fee) {
     owner = msg.sender;
     moveFee = _fee;
+  }
+
+ /**
+  Only owner 
+   */
+  function setMapSize(uint[2] memory _size) {
     mapSize = _size;
   }
 
@@ -28,12 +34,13 @@ contract MazeGame {
   Anyone
   */
   function updatePlayerPosition(uint[2] memory _pos) public payable {
-    require(msg.value >= moveFee, "CHECK MOVE FEE AGAIN!");   
+    require(msg.value >= moveFee, "INSUFFICIENT FEE!");   
     uint[2] memory currPos = playerPositions[msg.sender];
     require((_pos[0] == currPos[0] && (_pos[1] == currPos[1] - 1 || _pos[1] == currPos[1] + 1)) // UP/DOWN
     || (_pos[1] == currPos[1] && (_pos[0] == currPos[0] - 1 || _pos[0] == currPos[0] + 1)) // LEFT/RIGHT
     && (checkMove(_pos[0], _pos[1])), // check block
     "INVALID MOVE!");
+    playerPositions[msg.sender] = _pos;
   }
 
   function checkMove(uint x, uint y) private view returns (bool) {
@@ -48,6 +55,9 @@ contract MazeGame {
     map = _map;
   }
 
+   /**
+  Only owner 
+   */
   function reward(address payable account) public payable {
     require(msg.sender == owner, "NOT OWNER!");
     payable(account).transfer(msg.value);

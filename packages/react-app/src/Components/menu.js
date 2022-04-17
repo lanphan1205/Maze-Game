@@ -8,7 +8,41 @@ let activeClassName = "bg-gray-900 text-white " + baseNavClass;
 let inactiveClassName =
   "text-gray-300 hover:bg-gray-700 hover:text-white" + baseNavClass;
 
-export default function Header() {
+export default function Header({web3Prop}) {
+  const {
+    ethers,
+    address,
+    readContracts,
+    writeContracts,
+    // balance,
+    web3Modal,
+    loadWeb3Modal,
+    signMessage,
+    logoutOfWeb3Modal,
+    tx,
+    gasPrice,
+    signed,
+    setSigned,
+  } = web3Prop;
+
+  function ConnectButton() {
+    if (web3Modal) {
+      if (web3Modal.cachedProvider && signed) {
+        return (
+          <button className={activeClassName} onClick={logoutOfWeb3Modal}>
+            Log out
+          </button>
+        );
+      }
+      else {
+        return (
+          <button className={inactiveClassName} onClick={signMessage}>
+            Connect wallet
+          </button>
+        );
+      }
+    }
+  }
   return (
     <>
       <div className="min-h-full">
@@ -44,6 +78,7 @@ export default function Header() {
                   <div className="hidden md:block">
                     <div className="ml-4 flex items-center md:ml-6">
                       {/* Con add stuff here for things on the right like wallet connection*/}
+                      <ConnectButton />
                     </div>
                   </div>
                   <div className="-mr-2 flex md:hidden">
