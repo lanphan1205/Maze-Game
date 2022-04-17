@@ -29,7 +29,7 @@ const { ethers, BigNumber } = require("ethers");
 const DEBUG = true;
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS.kovan; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = targetNetwork.rpcUrl;
@@ -183,16 +183,15 @@ function App() {
   // The transactor wraps transactions and provides notificiations
   const tx = Transactor(userSigner, gasPrice);
 
+  // Faucet Tx can be used to send funds from the faucet
+  const faucetTx = Transactor(localProvider, gasPrice);
+
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(localProvider, address);
 
   const contractConfig = useContractConfig();
 
-  // Load in your local 📝 contract and read a value from it:
-  const readContracts = useContractLoader(localProvider, contractConfig);
-
-  // If you want to make 🔐 write transactions to your contracts, use the userSigner:
-  const writeContracts = useContractLoader(
+  const loadContracts = useContractLoader(
     userSigner,
     contractConfig,
     localChainId
@@ -209,8 +208,7 @@ function App() {
       address &&
       selectedChainId &&
       yourLocalBalance &&
-      readContracts &&
-      writeContracts
+      loadContracts
     ) {
       console.log(
         "_____________________________________ 🏗 scaffold-eth _____________________________________"
@@ -222,16 +220,9 @@ function App() {
         "💵 yourLocalBalance",
         yourLocalBalance ? ethers.utils.formatEther(yourLocalBalance) : "..."
       );
-      console.log("📝 readContracts", readContracts);
-      console.log("🔐 writeContracts", writeContracts);
+      console.log("📝 loadContracts", loadContracts);
     }
-  }, [
-    address,
-    selectedChainId,
-    yourLocalBalance,
-    readContracts,
-    writeContracts,
-  ]);
+  }, [address, selectedChainId, yourLocalBalance, loadContracts]);
 
   const signMessage = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -307,8 +298,7 @@ function App() {
   const web3Prop = {
     ethers,
     address,
-    readContracts,
-    writeContracts,
+    loadContracts,
     // balance,
     yourLocalBalance,
     web3Modal,
@@ -316,6 +306,7 @@ function App() {
     signMessage,
     logoutOfWeb3Modal,
     tx,
+    faucetTx,
     gasPrice,
     signed,
     setSigned,

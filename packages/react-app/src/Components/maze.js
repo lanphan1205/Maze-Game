@@ -39,9 +39,8 @@ export default function Maze({ web3Prop }) {
   const {
     ethers,
     address,
-    readContracts,
-    writeContracts,
-    yourLocalBalance,
+    loadContracts,
+    // balance,
     web3Modal,
     loadWeb3Modal,
     signMessage,
@@ -132,6 +131,26 @@ export default function Maze({ web3Prop }) {
       return;
     }
     setIsLoading(true);
+
+    // blockchain
+    // update player position
+    tx(
+      loadContracts.MazeGame.updatePlayerPosition(newPosition, {
+        value: 0.001 * 10 ** 18,
+        gasLimit: 30000,
+      })
+    );
+
+    // read position
+    const x_pos = await loadContracts.MazeGame.playerPositions(address, 0);
+    console.log("X", x_pos.toNumber());
+    const y_pos = await loadContracts.MazeGame.playerPositions(address, 1);
+    console.log("Y", y_pos.toNumber());
+    if (!(x_pos == newPosition[0] && y_pos == newPosition[1])) {
+      setIsLoading(false);
+      return;
+    }
+
     const { response, error } = await updatePosition(newPosition);
     if (response.status === 200) {
       setPosition(newPosition);

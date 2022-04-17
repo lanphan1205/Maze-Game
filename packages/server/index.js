@@ -26,6 +26,35 @@ console.log(FullMaze);
 console.log("--- Revealed Maze ---");
 console.log(RevealedMaze);
 
+// smart contracts
+const { networkConfig, getRpcUrlFromName } = require("./constants");
+
+const { ethers } = require("ethers");
+const fs = require("fs");
+
+const network = process.argv[2];
+
+const MGContractFile = fs.readFileSync(
+  `./hardhat/deployments/${network}/MazeGame.json`
+);
+const MGContract = JSON.parse(MGContractFile.toString());
+
+const signer = new ethers.providers.JsonRpcProvider(
+  getRpcUrlFromName[network]
+).getSigner();
+const MG = new ethers.Contract(MGContract.address, MGContract.abi, signer);
+
+
+// const GreeterContractFile = fs.readFileSync(
+//   `./hardhat/deployments/${network}/Greeter.json`
+// );
+// const GreeterContract = JSON.parse(GreeterContractFile.toString());
+
+// const signer = new ethers.providers.JsonRpcProvider(
+//   getRpcUrlFromName[network]
+// ).getSigner();
+// const Greeter = new ethers.Contract(GreeterContract.address, GreeterContract.abi, signer);
+
 // express route
 // app.get("/contract-owner", (req, res) => {
 //   // res.send("Hello World!");
@@ -37,13 +66,21 @@ console.log(RevealedMaze);
 // });
 
 app.get("/start", (req, res) => {
-  res.send({
-    rows: FullMaze.rows,
-    cols: FullMaze.cols,
-    maze: RevealedMaze,
-    start: FullMaze.start,
-    exitsCount: FullMaze.exitsCount,
-  });
+  if (req.body.address) {
+    const register = async (address) => {
+      let tx_reg = await MG.register(address, FullMaze.start);
+      await tx_reg.wait(1);
+      
+    };
+    res.send({
+      rows: FullMaze.rows,
+      cols: FullMaze.cols,
+      maze: RevealedMaze,
+      start: FullMaze.start,
+      exitsCount: FullMaze.exitsCount,
+    });
+  }
+  
 });
 
 app.post("/move", (req, res) => {
@@ -70,30 +107,4 @@ app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
 
-// smart contracts
-// const { networkConfig, getRpcUrlFromName } = require("./constants");
 
-// const { ethers } = require("ethers");
-// const fs = require("fs");
-
-// const network = process.argv[2];
-
-// const MGContractFile = fs.readFileSync(
-//   `./hardhat/deployments/${network}/MazeGame.json`
-// );
-// const MGContract = JSON.parse(MGContractFile.toString());
-
-// const signer = new ethers.providers.JsonRpcProvider(
-//   getRpcUrlFromName[network]
-// ).getSigner();
-// const MG = new ethers.Contract(MGContract.address, MGContract.abi, signer);
-
-// const GreeterContractFile = fs.readFileSync(
-//   `./hardhat/deployments/${network}/Greeter.json`
-// );
-// const GreeterContract = JSON.parse(GreeterContractFile.toString());
-
-// const signer = new ethers.providers.JsonRpcProvider(
-//   getRpcUrlFromName[network]
-// ).getSigner();
-// const Greeter = new ethers.Contract(GreeterContract.address, GreeterContract.abi, signer);

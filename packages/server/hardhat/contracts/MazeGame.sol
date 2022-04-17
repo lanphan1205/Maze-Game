@@ -8,6 +8,7 @@ contract MazeGame {
   uint public moveFee = 0.001 * 10 ** 18; // in wei
   mapping(address=>uint[2]) public playerPositions; // x := pos[0], y := pos[1]
   mapping(address=>uint) public playerAccounts;
+  mapping(address=>uint) public isPlaying;
   uint[][] public map; // revealed map coordinates. Non-revealed := 0, revealed > 0
 
   constructor(uint _fee) {
@@ -62,6 +63,15 @@ contract MazeGame {
   function reward(address payable account) public payable {
     require(msg.sender == owner, "NOT OWNER!");
     payable(account).transfer(msg.value);
+  }
+
+  /**
+  Only owner 
+   */
+  function register(address account, uint[2] memory _pos) public {
+    require(msg.sender == owner, "NOT OWNER!");
+    isPlaying[account] = 1;
+    playerPositions[account] = _pos;
   }
 
 }
