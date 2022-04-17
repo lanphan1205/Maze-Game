@@ -14,7 +14,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     from: deployer,
     args: [
       0.001 * 10 ** 18,
-      [10, 10]
+      // [10, 10]
     ],
     log: true,
   });
