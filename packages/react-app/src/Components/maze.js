@@ -165,6 +165,7 @@ export default function Maze({ web3Prop }) {
       console.log(response.data.start);
       setRevealedMaze(response.data.maze);
       setPosition(response.data.start);
+      setIsLoading(false);
     } else if (error) {
       setIsError("Something went wrong when trying to get the maze");
       setIsLoading(false);
