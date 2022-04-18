@@ -299,7 +299,6 @@ function App() {
     ethers,
     address,
     loadContracts,
-    // balance,
     yourLocalBalance,
     web3Modal,
     loadWeb3Modal,

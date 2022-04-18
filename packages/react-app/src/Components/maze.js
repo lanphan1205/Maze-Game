@@ -43,7 +43,7 @@ export default function Maze({ web3Prop }) {
     ethers,
     address,
     loadContracts,
-    // balance,
+    yourLocalBalance,
     web3Modal,
     loadWeb3Modal,
     signMessage,
@@ -54,6 +54,7 @@ export default function Maze({ web3Prop }) {
     setSigned,
   } = web3Prop;
   const [isError, setIsError] = useState("");
+  const [prizePool, setPrizePool] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [revealedMaze, setRevealedMaze] = useState();
   const [position, setPosition] = useState();
@@ -108,6 +109,27 @@ export default function Maze({ web3Prop }) {
     };
     checkValidMove();
   }, [position, revealedMaze]);
+
+  useEffect(() => {
+    let isCancelled = false;
+    if (address) {
+      const getBalance = async () => {
+        let balance = await loadContracts.MazeGame.getBalance();
+        if (!isCancelled) {
+          console.log(
+            "IS UPDATING BALANCE WHY SO SLOW",
+            ethers.utils.formatUnits(balance, "ether")
+          );
+          setPrizePool(ethers.utils.formatUnits(balance, "ether"));
+        }
+      };
+      getBalance();
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [revealedMaze, yourLocalBalance]);
 
   async function move(dir) {
     let newPosition;
@@ -267,6 +289,9 @@ export default function Maze({ web3Prop }) {
                       </div>
                       <div className="flex flex-nowrap overflow-visible whitespace-nowrap">
                         Current Position: {position[0]},{position[1]}
+                      </div>
+                      <div className="flex flex-nowrap overflow-visible whitespace-nowrap">
+                        Prize Pool: {prizePool} Eth
                       </div>
                     </>
                   ) : (

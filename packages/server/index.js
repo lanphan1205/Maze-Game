@@ -39,20 +39,31 @@ const MGContractFile = fs.readFileSync(
 );
 const MGContract = JSON.parse(MGContractFile.toString());
 
-const signer = new ethers.providers.JsonRpcProvider(
+const provider = new ethers.providers.JsonRpcProvider(
   getRpcUrlFromName[network]
-).getSigner();
+);
+
+const signer = provider.getSigner();
 const MG = new ethers.Contract(MGContract.address, MGContract.abi, signer);
 
-const initMap = async (exitsCount) => {
-  let tx_update_map = await MG.updateMap(RevealedMaze, exitsCount);
+const initGame = async () => {
+  const tx = {
+    from: "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+    to: MGContract.address,
+    value: ethers.utils.parseEther("1"),
+  };
+  await signer.sendTransaction(tx);
+  let tx_update_map = await MG.initGame(RevealedMaze, FullMaze.exitsCount);
   await tx_update_map.wait(1);
 };
 
-initMap(FullMaze.exitsCount).then(() => {
-  console.log("Map Init. ");
-});
+// provider.listAccounts().then((result) => {
 
+// };
+
+initGame().then(() => {
+  console.log("Game initialised ");
+});
 // express route
 app.get("/contract-owner", (req, res) => {
   // print contract owner
@@ -109,7 +120,8 @@ app.post("/move", (req, res) => {
           let rewardTx = await MG.reward(req.body.address);
           await rewardTx.wait(1);
         }
-        await initMap(0); // don't update exit count
+        let updateTx = await MG.updateMap(RevealedMaze);
+        await updateTx.wait(1);
         res.send(RevealedMaze);
       }
     };

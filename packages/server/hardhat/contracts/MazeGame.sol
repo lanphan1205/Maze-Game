@@ -1,5 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
+import "hardhat/console.sol";
 
 contract MazeGame {
   address public owner;
@@ -10,13 +11,31 @@ contract MazeGame {
   mapping(address=>uint) public playerAccounts;
   mapping(address=>uint) public isPlaying;
   uint[][] public map; // revealed map coordinates. Non-revealed := 0, revealed > 0
-  uint exit;
+  uint exitsCount;
 
-  constructor(uint _fee) {
+  constructor() {
     owner = msg.sender;
-    moveFee = _fee;
   }
 
+  function initGame(uint[][] memory _map, uint _exitsCount ) public{
+    require(msg.sender == owner, "NOT OWNER!");
+    require(_exitsCount > 0, "NOT ENOUGH EXITS");
+    exitsCount = _exitsCount;
+    map = _map;
+
+  }
+
+  receive() external payable {}
+
+  function getBalance() public view returns (uint){
+    console.log(address(this).balance);
+    return address(this).balance;
+  }
+
+  function setMoveFee(uint _moveFee) public {
+    require(msg.sender == owner, "NOT OWNER!");
+    moveFee = _moveFee;
+  }
  /**
   Only owner 
    */
@@ -40,9 +59,13 @@ contract MazeGame {
     require(msg.value >= moveFee, "INSUFFICIENT FEE!");   
     require(isPlaying[msg.sender]==1, "PLAYER NOT PLAYING");
     uint[2] memory currPos = playerPositions[msg.sender];
+    unchecked {
+    require(currPos[1] - 1 >= 0 && currPos[0]-1 >= 0 , "INVALID NUMBER");
     require((_pos[0] == currPos[0] && (_pos[1] == currPos[1] - 1 || _pos[1] == currPos[1] + 1)) // UP/DOWN
     || (_pos[1] == currPos[1] && (_pos[0] == currPos[0] - 1 || _pos[0] == currPos[0] + 1)) // LEFT/RIGHT
     , "MOVE IS MORE THAN 1 SPACE"); 
+      
+    }
     require(checkMove(_pos[0], _pos[1]), // check block
     "MOVE IS WALL OR HIDDEN");
     playerAccounts[msg.sender] = msg.value;
@@ -56,12 +79,9 @@ contract MazeGame {
   /**
   Only owner 
    */
-  function updateMap(uint[][] memory _map, uint _exitCount) public {
+  function updateMap(uint[][] memory _map) public {
     require(msg.sender == owner, "NOT OWNER!");
     map = _map;
-    if (_exitCount != 0){
-      exit = _exitCount;
-    }
   }
 
    /**
@@ -69,13 +89,20 @@ contract MazeGame {
    */
   function reward(address payable account) public payable {
     require(msg.sender == owner, "NOT OWNER!");
-    require(exit != 0, "NO MORE EXITS LEFT");
-    exit -=1;
-    if(exit > 1){
+    require(exitsCount != 0, "NO MORE EXITS LEFT");
+    unchecked {
+    exitsCount -=1;
+    if(exitsCount > 0){
+      console.log("EXIT",address(this).balance) ;
+      require((address(this).balance > 0 && address(this).balance > address(this).balance/2), "FUCK YOU" );
       payable(account).transfer(address(this).balance/2);
-    }else if(exit == 0) {
+    }else if(exitsCount == 0) {
+      console.log("LAST EXIT");
+      require(address(this).balance > 0, "FUCK U TOO");
       payable(account).transfer(address(this).balance);
     }
+    }  
+    
   }
   
 
