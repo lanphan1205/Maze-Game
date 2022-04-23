@@ -49,7 +49,7 @@ contract MazeGame {
    */
   function setMapHash(bytes32 _mapHash) public {
     require(msg.sender == owner, "NOT OWNER!");
-    mapHash = _mapHash;
+    mapHash = keccak256(abi.encodePacked(_mapHash));
   }
 
   /**
@@ -94,11 +94,9 @@ contract MazeGame {
     exitsCount -=1;
     if(exitsCount > 0){
       console.log("EXIT",address(this).balance) ;
-      require((address(this).balance > 0 && address(this).balance > address(this).balance/2), "FUCK YOU" );
       payable(account).transfer(address(this).balance/2);
     }else if(exitsCount == 0) {
       console.log("LAST EXIT");
-      require(address(this).balance > 0, "FUCK U TOO");
       payable(account).transfer(address(this).balance);
     }
     }  
