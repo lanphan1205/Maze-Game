@@ -47,9 +47,9 @@ contract MazeGame {
   /**
   Only owner 
    */
-  function setMapHash(bytes32 _mapHash) public {
+  function setMapHash(string memory _map) public {
     require(msg.sender == owner, "NOT OWNER!");
-    mapHash = keccak256(abi.encodePacked(_mapHash));
+    mapHash = keccak256(abi.encodePacked(_map));
   }
 
   /**
