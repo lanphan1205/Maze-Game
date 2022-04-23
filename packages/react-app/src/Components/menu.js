@@ -47,7 +47,7 @@ export default function Header({ web3Prop }) {
   function Faucet() {
     return (
       <button
-        className={activeClassName}
+        className={`ml-1 ${activeClassName}`}
         onClick={() => {
           faucetTx({
             to: address,

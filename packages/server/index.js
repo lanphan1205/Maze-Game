@@ -92,13 +92,6 @@ app.post("/start", (req, res) => {
 });
 
 app.post("/move", (req, res) => {
-  // req contains position array of where the player **says** he has moved to[row_pos, col_pos] & player address(NOT DONE YET)
-  // Verify player position(using his address) with the smart contract's address -> position mapping, return some error if invalid
-  // Smart contract should have already verified player move was valid before recording, so no need to do another check here.
-  // Call revealBlocks to update the server's RevealedMaze state
-  // Send this RevealedMaze to the smart contract.
-  // When the smart contract responds(I hope it does),
-  // Only then do we send RevealedMaze to the client via res.send(RevealedMaze) so his frontend updates
   if (req.body.address && req.body.position) {
     const updateMap = async () => {
       const r_pos = await MG.playerPositions(req.body.address, 0);

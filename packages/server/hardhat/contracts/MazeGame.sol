@@ -11,8 +11,8 @@ contract MazeGame {
   mapping(address=>uint) public playerAccounts;
   mapping(address=>uint) public isPlaying;
   uint[][] public map; // revealed map coordinates. Non-revealed := 0, revealed > 0
-  uint exitsCount;
-
+  uint public exitsCount;
+  
   constructor() {
     owner = msg.sender;
   }
@@ -47,9 +47,9 @@ contract MazeGame {
   /**
   Only owner 
    */
-  function setMapHash(bytes32 _mapHash) public {
+  function setMapHash(string memory _map) public {
     require(msg.sender == owner, "NOT OWNER!");
-    mapHash = _mapHash;
+    mapHash = keccak256(abi.encodePacked(_map));
   }
 
   /**
@@ -90,15 +90,13 @@ contract MazeGame {
   function reward(address payable account) public payable {
     require(msg.sender == owner, "NOT OWNER!");
     require(exitsCount != 0, "NO MORE EXITS LEFT");
+    require((map[playerPositions[account][0]][playerPositions[account][1]] == 2), "INCORRECT ADDRESS, BAD SERVER" );
     unchecked {
     exitsCount -=1;
+    require(address(this).balance > 0, "NO FUNDS IN POOL");
     if(exitsCount > 0){
-      console.log("EXIT",address(this).balance) ;
-      require((address(this).balance > 0 && address(this).balance > address(this).balance/2), "FUCK YOU" );
       payable(account).transfer(address(this).balance/2);
     }else if(exitsCount == 0) {
-      console.log("LAST EXIT");
-      require(address(this).balance > 0, "FUCK U TOO");
       payable(account).transfer(address(this).balance);
     }
     }  
