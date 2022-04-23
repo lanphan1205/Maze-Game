@@ -200,6 +200,30 @@ export default function Maze({ web3Prop }) {
       }),
       callBack
     );
+<<<<<<< Updated upstream
+=======
+
+    // read position
+    const x_pos = await loadContracts.MazeGame.playerPositions(address, 0);
+    console.log("X", x_pos.toNumber());
+    const y_pos = await loadContracts.MazeGame.playerPositions(address, 1);
+    console.log("Y", y_pos.toNumber());
+    if (!(x_pos == newPosition[0] && y_pos == newPosition[1])) {
+      setIsLoading(false);
+      return;
+    }
+
+    const { response, error } = await updatePosition(newPosition, address);
+    if (response.status === 200) {
+      setPosition(newPosition);
+      // console.log(response.data);
+      setRevealedMaze(response.data);
+      setIsLoading(false);
+    } else if (error) {
+      setIsError("Something went wrong when trying to make a move");
+      setIsLoading(false);
+    }
+>>>>>>> Stashed changes
   }
 
   async function getMaze() {

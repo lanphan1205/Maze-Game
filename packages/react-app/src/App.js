@@ -316,17 +316,17 @@ function App() {
       <header className="bg-white shadow">
         <div className="flex justify-between max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold text-gray-900">{currPage}</h1>
-          {web3Prop.address ? (
+          {address ? (
             <div className="flex flex-col pr-4">
               <h1 className="text-sm font-medium text-gray-900">
                 <span className="font-bold pr-1">Address:</span>
 
                 <span className="ml-1">
-                  {web3Prop.address.slice(0, 5) +
+                  {address.slice(0, 5) +
                     "..." +
-                    web3Prop.address.slice(
-                      web3Prop.address.length - 5,
-                      web3Prop.address.length
+                    address.slice(
+                      address.length - 5,
+                      address.length
                     )}
                 </span>
               </h1>
