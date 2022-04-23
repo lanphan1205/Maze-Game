@@ -13,7 +13,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const MG = await deploy("MazeGame", {
     from: deployer,
     args: [
-      0.001 * 10 ** 18,
+      // 0.001 * 10 ** 18,
       // [10, 10]
     ],
     log: true,

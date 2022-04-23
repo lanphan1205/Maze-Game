@@ -5,19 +5,22 @@ const server = axios.create({
   responseType: "json",
 });
 
-const startMaze = async () => {
+async function startMaze(address) {
   try {
-    let response = await server.get("/start");
+    let response = await server.post("/start", {
+      address: address,
+    });
     // console.log(response);
     return { response };
   } catch (error) {
     return { error };
   }
-};
+}
 
-async function updatePosition(position) {
+async function updatePosition(address, position) {
   try {
     let response = await server.post("/move", {
+      address: address,
       position: position,
     });
     return { response };
